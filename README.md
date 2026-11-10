@@ -26,6 +26,9 @@ Changes from upstream 1.0.0:
   (`shuffle_sdk` itself pins `requests==2.32.3` and `urllib3==2.3.0`, both with
   published CVEs);
 - casts `tlp` to an integer and accepts a boolean `force`;
+- accepts MISP and DFIR-IRIS observable types (`ip-dst`, `sha256`, `hostname`,
+  `email-src`, ...) as `datatype` and maps them to Cortex data types, so an IRIS
+  IOC type can be passed straight through;
 - version 1.0.1, so its image tag (`frikky/shuffle:cortex_1.0.1`) does not
   collide with the 1.0.0 tag on Docker Hub, which a Shuffle swarm would pull
   over a locally built image.

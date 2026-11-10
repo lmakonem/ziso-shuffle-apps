@@ -8,6 +8,26 @@ from cortex4py.api import Api
 
 from shuffle_sdk import AppBase
 
+# MISP and DFIR-IRIS observable types mapped to Cortex data types, so an IOC type
+# can be passed straight through (for example "ip-dst" or "sha256").
+CORTEX_DATATYPES = {
+    "ip-src": "ip", "ip-dst": "ip", "ip-src|port": "ip", "ip-dst|port": "ip", "ip-any": "ip",
+    "hostname": "fqdn", "domain|ip": "domain",
+    "md5": "hash", "sha1": "hash", "sha224": "hash", "sha256": "hash", "sha384": "hash",
+    "sha512": "hash", "ssdeep": "hash", "imphash": "hash", "tlsh": "hash",
+    "email": "mail", "email-src": "mail", "email-dst": "mail",
+    "email-subject": "mail_subject", "uri": "url", "link": "url",
+    "user-agent": "user-agent", "regkey": "registry", "regkey|value": "registry",
+    "AS": "autonomous-system", "as": "autonomous-system",
+}
+
+
+def to_cortex_datatype(datatype):
+    """Return the Cortex data type for a Cortex, MISP or IRIS observable type."""
+    value = str(datatype or "").strip()
+    return CORTEX_DATATYPES.get(value, CORTEX_DATATYPES.get(value.lower(), value))
+
+
 class Cortex(AppBase):
     __version__ = "1.0.1"
     app_name = "cortex"
@@ -24,6 +44,7 @@ class Cortex(AppBase):
         super().__init__(redis, logger, console_logger)
 
     def get_available_analyzers(self, apikey, url, datatype):
+        datatype = to_cortex_datatype(datatype)
         self.api = Api(url, apikey, cert=False)
         try:
             analyzers = self.api.analyzers.find_all({}, range='all')
@@ -55,6 +76,7 @@ class Cortex(AppBase):
 
         force = 1 if str(force).lower() == "true" else 0
         tlp = int(tlp)
+        datatype = to_cortex_datatype(datatype)
 
         self.api = Api(url, apikey, cert=False)
         analyzers = self.get_available_analyzers(apikey, url, datatype)
@@ -84,6 +106,7 @@ class Cortex(AppBase):
     def run_analyzer(self, apikey, url, analyzer_name, data, datatype, message="", tlp=1, force="true"):
         force = 1 if str(force).lower() == "true" else 0
         tlp = int(tlp)
+        datatype = to_cortex_datatype(datatype)
 
         self.api = Api(url, apikey, cert=False)
         try:
